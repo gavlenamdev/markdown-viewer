@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" data-width="wide">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' mdv: data: https: http:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; connect-src 'self' mdv:;"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Markdown Viewer</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="toolbar">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="currentColor"/>
+              <path d="M9 7.5h10.2L23 11.4V24.5H9V7.5Z" fill="var(--paper)"/>
+              <path d="M19.2 7.5V11.2H23" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M12 15.2h8M12 18.2h6.2M12 21.2h7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <div class="file-meta">
+            <span id="file-name">No file open</span>
+            <span id="file-path">Drop a Markdown file to begin</span>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button id="open-btn" class="icon-btn" type="button" title="Open (Ctrl+O)">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M3.5 7.5h6l1.6 2H20.5v9.5H3.5V7.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            Open
+          </button>
+          <button id="toc-btn" class="icon-btn" type="button" title="Toggle contents (Ctrl+B)">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 7h14M5 12h14M5 17h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            Contents
+          </button>
+          <button id="width-btn" class="icon-btn" type="button" title="Cycle page width (Ctrl+Shift+W)">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M4 7h16M4 17h16M8 7v10M16 7v10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span id="width-label">Wide</span>
+          </button>
+          <button id="search-btn" class="icon-btn" type="button" title="Find in document (Ctrl+F)">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="10.5" cy="10.5" r="5.5" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M15 15l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            Find
+          </button>
+          <button id="theme-btn" class="icon-btn" type="button" title="Cycle theme (Ctrl+Shift+T)">
+            <svg id="theme-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M12 3.5v1.8M12 18.7v1.8M4.6 12H2.8M21.2 12h-1.8M6.1 6.1l1.3 1.3M16.6 16.6l1.3 1.3M17.9 6.1l-1.3 1.3M7.4 16.6l-1.3 1.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span id="theme-label">System</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="search-bar" class="search-bar hidden">
+        <label class="search-field">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="10.5" cy="10.5" r="5.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M15 15l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <input id="search-input" type="search" placeholder="Find in document" autocomplete="off" spellcheck="false" />
+        </label>
+        <span id="search-count" class="search-count"></span>
+        <button id="search-prev" class="icon-btn" type="button" title="Previous (Shift+Enter)">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 18V6M6.5 11.5 12 6l5.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button id="search-next" class="icon-btn" type="button" title="Next (Enter)">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 6v12M6.5 12.5 12 18l5.5-5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button id="search-case" class="icon-btn" type="button" title="Match case">Aa</button>
+        <button id="search-close" class="icon-btn" type="button" title="Close (Esc)">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="workspace">
+        <aside id="toc" class="toc hidden" aria-label="Table of contents">
+          <h2>On this page</h2>
+          <nav id="toc-nav"></nav>
+        </aside>
+
+        <main id="stage" class="stage">
+          <section id="empty" class="empty">
+            <div class="empty-card">
+              <div class="empty-mark" aria-hidden="true"></div>
+              <p class="eyebrow">Markdown Viewer</p>
+              <h1>A quiet place to read.</h1>
+              <p>Drop a <code>.md</code> file here, or press <kbd>Ctrl</kbd> <kbd>O</kbd>.</p>
+              <button id="empty-open" class="icon-btn primary" type="button">Choose file</button>
+            </div>
+          </section>
+
+          <article id="article" class="article hidden">
+            <div id="content" class="markdown-body"></div>
+          </article>
+        </main>
+      </div>
+    </div>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,116 @@
+{
+  "name": "markdown-viewer",
+  "productName": "Markdown Viewer",
+  "version": "1.0.0",
+  "description": "Desktop Markdown viewer for Linux, Windows, and macOS",
+  "main": "src/main/index.js",
+  "author": "Sigmobird",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron --no-sandbox .",
+    "dev": "electron --no-sandbox . --dev",
+    "install:linux": "node scripts/install-linux.js",
+    "postinstall": "node scripts/download-electron.js",
+    "dist": "electron-builder --linux",
+    "dist:linux": "electron-builder --linux deb AppImage",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac"
+  },
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "highlight.js": "^11.11.1",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^8.6.7",
+    "markdown-it-task-lists": "^2.1.1"
+  },
+  "devDependencies": {
+    "electron": "^37.10.3",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.sigmobird.markdownviewer",
+    "productName": "Markdown Viewer",
+    "directories": {
+      "output": "dist",
+      "buildResources": "resources"
+    },
+    "files": [
+      "src/**/*",
+      "resources/**/*",
+      "package.json"
+    ],
+    "fileAssociations": [
+      {
+        "ext": "md",
+        "name": "Markdown",
+        "description": "Markdown Document",
+        "mimeType": "text/markdown",
+        "role": "Viewer"
+      },
+      {
+        "ext": "markdown",
+        "name": "Markdown",
+        "description": "Markdown Document",
+        "mimeType": "text/markdown",
+        "role": "Viewer"
+      },
+      {
+        "ext": "mdown",
+        "name": "Markdown",
+        "description": "Markdown Document",
+        "mimeType": "text/markdown",
+        "role": "Viewer"
+      },
+      {
+        "ext": "mkd",
+        "name": "Markdown",
+        "description": "Markdown Document",
+        "mimeType": "text/markdown",
+        "role": "Viewer"
+      }
+    ],
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Office",
+      "icon": "resources/icons",
+      "synopsis": "Read Markdown files",
+      "desktop": {
+        "StartupWMClass": "markdown-viewer",
+        "MimeType": "text/markdown;text/x-markdown;"
+      }
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "resources/icons/icon.png"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "resources/icons/icon.png",
+      "category": "public.app-category.productivity",
+      "extendInfo": {
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "Markdown Document",
+            "CFBundleTypeRole": "Viewer",
+            "LSHandlerRank": "Owner",
+            "LSItemContentTypes": [
+              "net.daringfireball.markdown",
+              "public.plain-text"
+            ]
+          }
+        ]
+      }
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}
