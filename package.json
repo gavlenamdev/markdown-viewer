@@ -1,6 +1,7 @@
 {
   "name": "markdown-viewer",
   "productName": "Markdown Viewer",
+  "desktopName": "markdown-viewer",
   "version": "1.0.0",
   "description": "Desktop Markdown viewer for Linux, Windows, and macOS",
   "main": "src/main/index.js",
@@ -32,7 +33,6 @@
   "build": {
     "appId": "com.sigmobird.markdownviewer",
     "productName": "Markdown Viewer",
-    "desktopName": "markdown-viewer",
     "directories": {
       "output": "dist",
       "buildResources": "resources"
