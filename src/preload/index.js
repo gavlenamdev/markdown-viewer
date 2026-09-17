@@ -38,6 +38,115 @@ md.use(anchor, {
 });
 md.use(taskLists, { enabled: true, label: true, labelAfter: true });
 
+const defaultFence = md.renderer.rules.fence;
+md.renderer.rules.fence = (tokens, idx, options, env, slf) => {
+  const token = tokens[idx];
+  const info = token.info ? md.utils.unescapeAll(token.info).trim() : '';
+  const lang = info.split(/\s+/, 1)[0].toLowerCase();
+  if (lang === 'mermaid') {
+    return `<div class="mermaid-block"><pre class="mermaid-src">${md.utils.escapeHtml(token.content)}</pre><div class="mermaid-svg"></div></div>\n`;
+  }
+  return defaultFence(tokens, idx, options, env, slf);
+};
+
+let mermaidReady = null;
+let mermaidId = 0;
+let mermaidRenderToken = 0;
+
+function cssThemeVar(name, fallback) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+function mermaidConfig() {
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return {
+    startOnLoad: false,
+    securityLevel: 'strict',
+    suppressErrorRendering: true,
+    logLevel: 'error',
+    theme: 'base',
+    fontFamily: 'Ubuntu, Cantarell, Noto Sans, Segoe UI, system-ui, sans-serif',
+    themeVariables: {
+      darkMode: dark,
+      background: 'transparent',
+      fontFamily: 'Ubuntu, Cantarell, Noto Sans, Segoe UI, system-ui, sans-serif',
+      primaryColor: cssThemeVar('--accent-soft', dark ? '#2b241c' : '#f6e5dc'),
+      primaryTextColor: cssThemeVar('--ink', dark ? '#efe6d8' : '#1c1814'),
+      primaryBorderColor: cssThemeVar('--accent', dark ? '#e2a66a' : '#9a3b24'),
+      secondaryColor: cssThemeVar('--chrome', dark ? '#141821' : '#f1ebe0'),
+      tertiaryColor: cssThemeVar('--code-bg', dark ? '#12161e' : '#f0e9db'),
+      lineColor: cssThemeVar('--muted', dark ? '#9b9286' : '#73695c'),
+      textColor: cssThemeVar('--ink', dark ? '#efe6d8' : '#1c1814'),
+      mainBkg: cssThemeVar('--accent-soft', dark ? '#2b241c' : '#f6e5dc'),
+      nodeBorder: cssThemeVar('--accent', dark ? '#e2a66a' : '#9a3b24'),
+      clusterBkg: cssThemeVar('--chrome', dark ? '#141821' : '#f1ebe0'),
+      clusterBorder: cssThemeVar('--line-strong', dark ? '#3d4658' : '#c9bca8'),
+      titleColor: cssThemeVar('--ink', dark ? '#efe6d8' : '#1c1814'),
+      edgeLabelBackground: cssThemeVar('--paper', dark ? '#1c212c' : '#fbf7ef'),
+      actorBkg: cssThemeVar('--accent-soft', dark ? '#2b241c' : '#f6e5dc'),
+      actorBorder: cssThemeVar('--accent', dark ? '#e2a66a' : '#9a3b24'),
+      actorTextColor: cssThemeVar('--ink', dark ? '#efe6d8' : '#1c1814'),
+      signalColor: cssThemeVar('--ink-soft', dark ? '#d5cbbd' : '#3d362e'),
+      labelBoxBkgColor: cssThemeVar('--paper', dark ? '#1c212c' : '#fbf7ef'),
+      labelBoxBorderColor: cssThemeVar('--line-strong', dark ? '#3d4658' : '#c9bca8'),
+      labelTextColor: cssThemeVar('--ink', dark ? '#efe6d8' : '#1c1814'),
+      noteBkgColor: cssThemeVar('--code-bg', dark ? '#12161e' : '#f0e9db'),
+      noteTextColor: cssThemeVar('--ink', dark ? '#efe6d8' : '#1c1814'),
+      noteBorderColor: cssThemeVar('--line-strong', dark ? '#3d4658' : '#c9bca8')
+    }
+  };
+}
+
+function getMermaid() {
+  if (!mermaidReady) {
+    mermaidReady = import('mermaid').then((mod) => {
+      const mermaid = mod.default;
+      mermaid.startOnLoad = false;
+      mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', logLevel: 'error' });
+      return mermaid;
+    });
+  }
+  return mermaidReady;
+}
+
+async function renderMermaid() {
+  const blocks = document.querySelectorAll('.mermaid-block');
+  if (!blocks.length) return;
+
+  const token = ++mermaidRenderToken;
+  const mermaid = await getMermaid();
+  if (token !== mermaidRenderToken) return;
+  mermaid.initialize(mermaidConfig());
+
+  for (const block of blocks) {
+    if (token !== mermaidRenderToken) return;
+    const sourceEl = block.querySelector('.mermaid-src');
+    const mount = block.querySelector('.mermaid-svg');
+    if (!sourceEl || !mount) continue;
+
+    const source = sourceEl.textContent.trim();
+    if (!source) {
+      mount.replaceChildren();
+      block.classList.remove('is-error');
+      continue;
+    }
+
+    const id = `mdv-mermaid-${++mermaidId}`;
+    try {
+      const { svg } = await mermaid.render(id, source);
+      mount.innerHTML = svg;
+      block.classList.remove('is-error');
+    } catch (error) {
+      block.classList.add('is-error');
+      const pre = document.createElement('pre');
+      pre.className = 'mermaid-error';
+      pre.textContent = error && error.message ? error.message : String(error);
+      mount.replaceChildren(pre);
+    }
+  }
+}
+
 function extractHeadings(tokens) {
   const headings = [];
   for (let i = 0; i < tokens.length; i += 1) {
@@ -93,7 +202,7 @@ function renderMarkdown(markdown, baseDir) {
   const raw = md.renderer.render(tokens, md.options, {});
   const clean = DOMPurify.sanitize(raw, {
     USE_PROFILES: { html: true },
-    ADD_ATTR: ['target', 'rel', 'class', 'id', 'checked', 'disabled', 'data-local-path'],
+    ADD_ATTR: ['target', 'rel', 'class', 'id', 'checked', 'disabled', 'data-local-path', 'role', 'aria-label'],
     ADD_TAGS: ['input']
   });
   const html = rewriteLocalUrls(clean, baseDir);
@@ -107,6 +216,7 @@ function renderMarkdown(markdown, baseDir) {
 
 contextBridge.exposeInMainWorld('viewer', {
   renderMarkdown,
+  renderMermaid,
   toResourceUrl,
   getPathForFile(file) {
     try {

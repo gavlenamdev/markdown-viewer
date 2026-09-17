@@ -193,6 +193,7 @@ function registerMediaProtocol() {
 
 function maybeInstallLinuxAssociations() {
   if (process.platform !== 'linux') return;
+  if (process.env.SNAP || process.env.FLATPAK_ID) return;
 
   const electronPath = process.execPath;
   const appRoot = app.isPackaged ? path.dirname(process.execPath) : path.join(__dirname, '../..');

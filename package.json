@@ -13,6 +13,7 @@
     "postinstall": "node scripts/download-electron.js",
     "dist": "electron-builder --linux",
     "dist:linux": "electron-builder --linux deb AppImage",
+    "dist:snap": "electron-builder --linux snap",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac"
   },
@@ -21,7 +22,8 @@
     "highlight.js": "^11.11.1",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^8.6.7",
-    "markdown-it-task-lists": "^2.1.1"
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^12.0.0"
   },
   "devDependencies": {
     "electron": "^37.10.3",
@@ -30,6 +32,7 @@
   "build": {
     "appId": "com.sigmobird.markdownviewer",
     "productName": "Markdown Viewer",
+    "desktopName": "markdown-viewer",
     "directories": {
       "output": "dist",
       "buildResources": "resources"
@@ -37,7 +40,8 @@
     "files": [
       "src/**/*",
       "resources/**/*",
-      "package.json"
+      "package.json",
+      "LICENSE"
     ],
     "fileAssociations": [
       {
@@ -72,15 +76,44 @@
     "linux": {
       "target": [
         "deb",
-        "AppImage"
+        "AppImage",
+        "snap"
       ],
+      "executableName": "markdown-viewer",
+      "syncDesktopName": true,
       "category": "Office",
       "icon": "resources/icons",
       "synopsis": "Read Markdown files",
+      "mimeTypes": [
+        "text/markdown",
+        "text/x-markdown"
+      ],
       "desktop": {
-        "StartupWMClass": "markdown-viewer",
-        "MimeType": "text/markdown;text/x-markdown;"
+        "entry": {
+          "StartupWMClass": "markdown-viewer",
+          "MimeType": "text/markdown;text/x-markdown;"
+        }
       }
+    },
+    "snap": {
+      "confinement": "strict",
+      "grade": "stable",
+      "summary": "Read Markdown files in a dedicated desktop viewer",
+      "useTemplateApp": true,
+      "allowNativeWayland": true,
+      "plugs": [
+        "desktop",
+        "desktop-legacy",
+        "wayland",
+        "x11",
+        "unity7",
+        "browser-support",
+        "network",
+        "home",
+        "removable-media",
+        "opengl",
+        "gsettings"
+      ]
     },
     "win": {
       "target": [

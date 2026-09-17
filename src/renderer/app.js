@@ -48,13 +48,20 @@ function systemTheme() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
+function resolvedTheme() {
+  return prefs.theme === 'system' ? systemTheme() : prefs.theme;
+}
+
 function applyTheme() {
-  const theme = prefs.theme === 'system' ? systemTheme() : prefs.theme;
+  const theme = resolvedTheme();
   document.documentElement.setAttribute('data-theme', theme);
   const label = prefs.theme === 'system' ? 'System' : prefs.theme === 'dark' ? 'Dark' : 'Light';
   themeLabel.textContent = label;
   const icon = document.getElementById('theme-icon');
   icon.innerHTML = THEME_ICONS[prefs.theme] || THEME_ICONS.system;
+  if (currentFile) {
+    window.viewer.renderMermaid();
+  }
 }
 
 function applyWidth() {
@@ -138,7 +145,14 @@ function highlightQuery(rawQuery) {
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const flags = matchCase ? 'g' : 'gi';
   const nodes = [];
-  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT);
+  const walker = document.createTreeWalker(content, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (node.parentElement && node.parentElement.closest('.mermaid-block')) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
   while (walker.nextNode()) {
     if (walker.currentNode.nodeValue) nodes.push(walker.currentNode);
   }
@@ -290,6 +304,7 @@ async function displayMarkdown(filePath) {
   stage.scrollTop = 0;
   applyToc();
   updateActiveToc();
+  await window.viewer.renderMermaid();
   if (isSearchVisible() && searchInput.value.trim()) {
     runFind({ findNext: false });
   }

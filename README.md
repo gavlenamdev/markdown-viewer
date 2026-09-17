@@ -5,9 +5,33 @@ Desktop Markdown reader for Ubuntu now, with Windows and macOS packaging hooks a
 ## What it does
 
 - Opens `.md`, `.markdown`, `.mdown`, `.mkd`, and `.mdwn` files
-- Renders GitHub-flavored Markdown (tables, task lists, fenced code)
+- Renders GitHub-flavored Markdown (tables, task lists, fenced code, Mermaid diagrams)
 - Reloads when the file changes on disk
 - Registers itself as the default Markdown viewer on Ubuntu
+
+## Snap Store
+
+Build the snap:
+
+```bash
+npm run dist:snap
+```
+
+Then register and publish with an Ubuntu One / Snap Store account:
+
+```bash
+snapcraft login
+snapcraft register markdown-viewer
+snapcraft upload --release=stable dist/markdown-viewer_1.0.0_amd64.snap
+```
+
+Or export credentials and run `./scripts/publish-snap.sh`.
+
+After it is live:
+
+```bash
+sudo snap install markdown-viewer
+```
 
 ## Ubuntu (this machine)
 

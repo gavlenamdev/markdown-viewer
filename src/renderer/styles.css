@@ -535,6 +535,48 @@ mark.mdv-find.is-active {
   line-height: 1.55;
 }
 
+.markdown-body .mermaid-block {
+  margin: 1.4em 0;
+  padding: 18px 16px;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: auto;
+}
+
+.markdown-body .mermaid-src {
+  display: none;
+}
+
+.markdown-body .mermaid-block.is-error .mermaid-src {
+  display: block;
+  margin: 0.8em 0 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: var(--code-ink);
+  overflow: auto;
+}
+
+.markdown-body .mermaid-error {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  font-family: var(--ui);
+  font-size: 0.92rem;
+  color: var(--accent);
+  white-space: pre-wrap;
+}
+
+.markdown-body .mermaid-svg svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  background: transparent;
+}
+
 .markdown-body hr {
   border: 0;
   border-top: 1px solid var(--line);
@@ -614,6 +656,9 @@ kbd {
     border: 0;
     padding: 0;
     max-width: none;
+  }
+  .markdown-body .mermaid-block {
+    break-inside: avoid;
   }
 }
 
